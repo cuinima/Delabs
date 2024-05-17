@@ -14,11 +14,11 @@ async def random_line(filepath: str, delete: bool = True):
         with open(filepath, 'w') as file:
             file.writelines(keys)
 
-    return random_key.strip()
+    return random_key.split("----")[1].strip()
 
 
 def get_all_lines(filepath: str):
     with open(filepath, 'r') as file:
         keys = file.readlines()
 
-    return [key.strip() for key in keys]
+    return [k.split("----")[1].strip() for k in keys]
