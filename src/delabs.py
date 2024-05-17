@@ -1,3 +1,5 @@
+import random
+
 from data import config
 from src.utils import Web3Utils
 from fake_useragent import UserAgent
@@ -18,8 +20,9 @@ class Delabs:
             "Referer": "https://app.delabs.gg",
             'User-Agent': UserAgent(os='windows').random,
         }
-
-        self.session = aiohttp.ClientSession(headers=headers, trust_env=True, cookie_jar=aiohttp.CookieJar())
+        connector = aiohttp.TCPConnector(ssl=False)
+        self.session = aiohttp.ClientSession(headers=headers, connector=connector, trust_env=True,
+                                             cookie_jar=aiohttp.CookieJar())
 
     async def logout(self):
         await self.session.close()
@@ -44,8 +47,8 @@ class Delabs:
 
         return self.web3_utils.get_signed_code(msg)
 
-    async def set_referrer(self):
-        json_data = {"referral_code": config.REF_CODE}
+    async def set_referrer(self,code):
+        json_data = {"referral_code": code}
         resp = await self.session.post("https://app.delabs.gg/mission/set-one-time-referral", json=json_data, proxy=self.proxy)
 
         return bool((await resp.json()).get("claimSuccess")) is True
@@ -59,6 +62,11 @@ class Delabs:
         resp = await self.session.post("https://app.delabs.gg/mission/set-daily-draw", proxy=self.proxy)
 
         return bool((await resp.json()).get("claimSuccess")) is True
+    async def getPoints(self):
+        resp = await self.session.post("https://app.delabs.gg/mission/user-daily-check-mission", proxy=self.proxy)
+
+
+        return bool((await resp.json()).get("status") == "success") is True
 
     async def get_user_info(self):
         resp = await self.session.post("https://app.delabs.gg/mission/user-info", proxy=self.proxy)
